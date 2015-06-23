@@ -1,0 +1,158 @@
+#lang slideshow
+
+#|
+First project
+Luis Eduardo Rodríguez Ramírez
+A01221156
+Programming languages
+|#
+
+;Window
+(require htdp/draw)
+(require lang/posn)
+(require racket/gui/base)
+
+;Constants
+(define WIDTH 180)
+(define HEIGHT 200)
+(define BLOCK-SIZE 30)
+(define RADIUS 15)
+(define BLOCK-DISTANCE 5)
+(define C1 BLOCK-DISTANCE)
+(define C2 (+ BLOCK-DISTANCE BLOCK-SIZE BLOCK-DISTANCE))
+(define C3 (+ BLOCK-DISTANCE BLOCK-SIZE BLOCK-DISTANCE BLOCK-SIZE BLOCK-DISTANCE))
+(define C4 (+ BLOCK-DISTANCE BLOCK-SIZE BLOCK-DISTANCE BLOCK-SIZE BLOCK-DISTANCE BLOCK-SIZE BLOCK-DISTANCE))
+(define C5 (+ BLOCK-DISTANCE BLOCK-SIZE BLOCK-DISTANCE BLOCK-SIZE BLOCK-DISTANCE BLOCK-SIZE BLOCK-DISTANCE BLOCK-SIZE BLOCK-DISTANCE))
+
+(define F1 (- HEIGHT BLOCK-SIZE 10))
+(define F2 (- HEIGHT BLOCK-SIZE BLOCK-SIZE 10))
+(define F3 (- HEIGHT BLOCK-SIZE BLOCK-SIZE BLOCK-SIZE 10))
+(define F4 (- HEIGHT BLOCK-SIZE BLOCK-SIZE BLOCK-SIZE BLOCK-SIZE 10))
+(define F5 (- HEIGHT BLOCK-SIZE BLOCK-SIZE BLOCK-SIZE BLOCK-SIZE BLOCK-SIZE 10))
+
+;Define column list
+(define C1L 0)
+(define C2L 0)
+(define C3L 0)
+(define C4L 0)
+(define C5L 0)
+
+;Positions of static objects
+(define origin (make-posn 15 0))
+(define centerArm (make-posn 1 30))
+(define floorPosition (make-posn 0 (- HEIGHT 10)))
+
+;Block structure
+(define-struct block (name x y shape color))
+
+;Blocks
+(define A (list ))
+(define B (list ))
+(define C (list ))
+(define D (list ))
+(define E (list ))
+
+(define colors '(red blue orange yellow green))
+(define tempPos C1)
+
+;Start the window
+(start WIDTH HEIGHT)
+
+;Draw robot arm in GUI
+(define robot-arm
+  (begin
+    (draw-solid-rect origin 5 30 'black)
+    (draw-solid-rect centerArm 30 5 'black)
+    )
+  )
+;Draw floor on GUI
+(define floor
+  (draw-solid-rect floorPosition WIDTH 10 'black)
+  )
+
+;Draw cube in GUI
+(define drawCube (lambda (item)
+                   (define temp (make-posn (block-x item) (block-y item)))
+                   (cond ((equal? (block-shape item) 'square) (draw-solid-rect temp BLOCK-SIZE BLOCK-SIZE (block-color item)))
+                         ((equal? (block-shape item) 'circle) (draw-solid-disk temp RADIUS (block-color item))))))
+;Erase cube from GUI
+(define clearCube (lambda (item)
+                   (define temp (make-posn (block-x item) (block-y item)))
+                   (cond ((equal? (block-shape item) 'square) (clear-solid-rect temp BLOCK-SIZE BLOCK-SIZE (block-color item)))
+                         ((equal? (block-shape item) 'circle) (clear-solid-disk temp RADIUS (block-color item))))))
+
+;Parse user input to defined columns
+(define parseInput (lambda (input)
+                     (cond ((equal? input 'C1) C1)
+                           ((equal? input 'C2) C2)
+                           ((equal? input 'C3) C3)
+                           ((equal? input 'C4) C4)
+                           ((equal? input 'C5) C5)
+                           (else C1))))
+
+;Checks the last row available
+(define checkRow (lambda (column)
+                   (cond ((equal? C1 column) (define temp (- HEIGHT (+ (* C1L BLOCK-SIZE) BLOCK-SIZE 10))) (set! C1L (+ C1L 1)) temp)
+                         ((equal? C2 column) (define temp (- HEIGHT (+ (* C2L BLOCK-SIZE) BLOCK-SIZE 10))) (set! C2L (+ C2L 1)) temp)
+                         ((equal? C3 column) (define temp (- HEIGHT (+ (* C3L BLOCK-SIZE) BLOCK-SIZE 10))) (set! C3L (+ C3L 1)) temp)
+                         ((equal? C4 column) (define temp (- HEIGHT (+ (* C4L BLOCK-SIZE) BLOCK-SIZE 10))) (set! C4L (+ C4L 1)) temp)
+                         ((equal? C5 column) (define temp (- HEIGHT (+ (* C5L BLOCK-SIZE) BLOCK-SIZE 10))) (set! C5L (+ C5L 1)) temp))))
+
+;Return the item on the blockList 
+(define checkItem (lambda (item)
+                    (cond ((equal? item 'A) A)
+                          ((equal? item 'B) B)
+                          ((equal? item 'C) C)
+                          ((equal? item 'D) D)
+                          ((equal? item 'E) E))))
+;Move block in GUI
+(define moveBlock (lambda (block column row)
+                    (clearCube block)
+                    (cond ((equal? (block-x block) C1)(set! C1L (- C1L 1)))
+                          ((equal? (block-x block) C2)(set! C2L (- C2L 1)))
+                          ((equal? (block-x block) C3)(set! C3L (- C3L 1)))
+                          ((equal? (block-x block) C4)(set! C4L (- C4L 1)))
+                          ((equal? (block-x block) C5)(set! C5L (- C5L 1))))
+                    
+                    (define temp (make-block (block-name block) column row (block-shape block) (block-color block)))
+                    (cond ((equal? block A) (set! A temp))
+                          ((equal? block B) (set! B temp))
+                          ((equal? block C) (set! C temp))
+                          ((equal? block D) (set! D temp))
+                          ((equal? block E) (set! E temp)))
+                    (drawCube temp)))
+
+;Move block to another position with the input of the user
+(define putOn(lambda (from to)
+               (moveBlock from (block-x to) (checkRow (block-x to)))))
+
+;Initialization function
+(define init (lambda ()
+               (for ([i 5])
+                 (display "In which column do you want to place the figure? (C1-C5)")
+               (set! tempPos (read))
+                 (cond ((= i 0)
+                        (let ([column (parseInput tempPos)]) (set! A (make-block 'A column (checkRow column) 'square 'green)))
+                        (drawCube A))
+                       
+                       ((= i 1)
+                        (let ([column (parseInput tempPos)]) (set! B (make-block 'B column (checkRow column) 'square 'red)))
+                        (drawCube B))
+                       
+                       ((= i 2)
+                        (let ([column (parseInput tempPos)]) (set! C (make-block 'C column (checkRow column) 'square 'blue)))
+                        (drawCube C))
+                       
+                       ((= i 3)
+                        (let ([column (parseInput tempPos)]) (set! D (make-block 'D column (checkRow column) 'square 'orange)))
+                        (drawCube D))
+                       
+                       ((= i 4)
+                        (let ([column (parseInput tempPos)]) (set! E (make-block 'E column (checkRow column) 'square 'yellow)))
+                        (drawCube E))
+                       ))
+               (begin
+                  robot-arm
+                  floor)))
+
+(init)
