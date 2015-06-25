@@ -61,14 +61,14 @@ Programming languages
 
 
 ;Draw robot arm in GUI
-(define robot-arm
-  (begin
-    (draw-solid-rect origin 5 30 'black)
-    (draw-solid-rect centerArm 30 5 'black)))
+(define robot-arm (lambda (coor1 coor2) 
+                    (begin
+                      (draw-solid-rect coor1 5 30 'black)
+                      (draw-solid-rect coor2 30 5 'black))))
 
 ;Draw floor on GUI
-(define floor
-  (draw-solid-rect floorPosition WIDTH 10 'black))
+(define floor (lambda () 
+                (draw-solid-rect floorPosition WIDTH 10 'black)))
 
 ;Draw cube in GUI
 (define drawCube (lambda (item)
@@ -201,6 +201,7 @@ Programming languages
                             ((= i 3)
                              (let ([column (parseInput tempPos)]) (set! D (make-block 'D column (checkRow column) 'square 'orange)))
                              (drawCube D))
+                            
                             ((= i 4)
                              (let ([column (parseInput tempPos)]) (set! E (make-block 'E column (checkRow column) 'circle 'yellow)))
                              (drawCube E))))))
@@ -208,8 +209,8 @@ Programming languages
 ;Initialization function
 (define init (lambda ()
                (begin
-                  robot-arm
-                  floor
+                  (robot-arm origin centerArm)
+                  (floor)
                   (blockInit))))
 
 (init)

@@ -6,7 +6,7 @@ All credits of the implementation to Luis Eduardo Rodríguez Ramírez
 
 
 **Usage**
-- Run the command "putOn(Block Block)".
+- Run the command "(putOn Block Block)".
 
 **Inventory of functions**
 - (start WIDTH HEIGHT) => Start the canvas in a new window
