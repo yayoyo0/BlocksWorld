@@ -18,19 +18,21 @@ Programming languages
 (define BLOCK-SIZE 30)
 (define RADIUS 15)
 (define BLOCK-DISTANCE 5)
+
+;Columns of the world
 (define C1 BLOCK-DISTANCE)
 (define C2 (+ BLOCK-DISTANCE BLOCK-SIZE BLOCK-DISTANCE))
 (define C3 (+ BLOCK-DISTANCE BLOCK-SIZE BLOCK-DISTANCE BLOCK-SIZE BLOCK-DISTANCE))
 (define C4 (+ BLOCK-DISTANCE BLOCK-SIZE BLOCK-DISTANCE BLOCK-SIZE BLOCK-DISTANCE BLOCK-SIZE BLOCK-DISTANCE))
 (define C5 (+ BLOCK-DISTANCE BLOCK-SIZE BLOCK-DISTANCE BLOCK-SIZE BLOCK-DISTANCE BLOCK-SIZE BLOCK-DISTANCE BLOCK-SIZE BLOCK-DISTANCE))
-
+;Rows of the world
 (define F1 (- HEIGHT BLOCK-SIZE 10))
 (define F2 (- HEIGHT BLOCK-SIZE BLOCK-SIZE 10))
 (define F3 (- HEIGHT BLOCK-SIZE BLOCK-SIZE BLOCK-SIZE 10))
 (define F4 (- HEIGHT BLOCK-SIZE BLOCK-SIZE BLOCK-SIZE BLOCK-SIZE 10))
 (define F5 (- HEIGHT BLOCK-SIZE BLOCK-SIZE BLOCK-SIZE BLOCK-SIZE BLOCK-SIZE 10))
 
-;Define column list
+;Define column block length
 (define C1L 0)
 (define C2L 0)
 (define C3L 0)
@@ -90,6 +92,7 @@ Programming languages
                                                               (define temp2 (make-posn (+ (block-x item) 10) (+ (block-y item) 20)))
                                                               (clear-solid-string temp2 (parseItem (block-name item)))))))
 
+;Parse the name of the block to print it in the canvas
 (define parseItem (lambda (item)
                     (cond ((equal? item 'A) "A")
                           ((equal? item 'B) "B")
@@ -135,6 +138,7 @@ Programming languages
                      ((and (equal? column (block-x E)) (equal? rowAbove (block-y E))) E)
                      (else '()))))
 
+;Parse the onTop blocks into a list to be processed
 (define onTopList (lambda (block)
                     (define temp '())
                     (cond ((null? block) temp)
@@ -157,6 +161,7 @@ Programming languages
                           ((equal? block E) (set! E temp)))
                     (drawCube temp)))
 
+;Helper function to move blocks
 (define moveHelper (lambda (list)
                      (cond ((null? list) true) 
                      (else (let ([column (findSpace)]) (moveBlock (car list) column (checkRow column))) 
@@ -173,35 +178,36 @@ Programming languages
                                    (not (null? (onTop to))) (moveHelper (onTopList (onTop to)))) 
                                   (moveBlock from (block-x to) (checkRow (block-x to))))
                                  (else (putOn from to)))))))
-               
+
+;Process the user input to specify the position of the blocks
+(define blockInit (lambda () 
+                    (for ([i 5])
+                      (display "In which column do you want to place the figure? (C1-C5)")
+                      (set! tempPos (read))
+                      (cond ((= i 0)
+                             (let ([column (parseInput tempPos)]) (set! A (make-block 'A column (checkRow column) 'square 'green)))
+                             (drawCube A))
+                            
+                            ((= i 1)
+                             (let ([column (parseInput tempPos)]) (set! B (make-block 'B column (checkRow column) 'square 'red)))
+                             (drawCube B))
+                            
+                            ((= i 2)
+                             (let ([column (parseInput tempPos)]) (set! C (make-block 'C column (checkRow column) 'square 'blue)))
+                             (drawCube C))
+                            
+                            ((= i 3)
+                             (let ([column (parseInput tempPos)]) (set! D (make-block 'D column (checkRow column) 'square 'orange)))
+                             (drawCube D))
+                            ((= i 4)
+                             (let ([column (parseInput tempPos)]) (set! E (make-block 'E column (checkRow column) 'circle 'yellow)))
+                             (drawCube E))))))
+
 ;Initialization function
 (define init (lambda ()
                (begin
                   robot-arm
-                  floor)
-               
-               (for ([i 5])
-                 (display "In which column do you want to place the figure? (C1-C5)")
-               (set! tempPos (read))
-                 (cond ((= i 0)
-                        (let ([column (parseInput tempPos)]) (set! A (make-block 'A column (checkRow column) 'square 'green)))
-                        (drawCube A))
-                       
-                       ((= i 1)
-                        (let ([column (parseInput tempPos)]) (set! B (make-block 'B column (checkRow column) 'square 'red)))
-                        (drawCube B))
-                       
-                       ((= i 2)
-                        (let ([column (parseInput tempPos)]) (set! C (make-block 'C column (checkRow column) 'square 'blue)))
-                        (drawCube C))
-                       
-                       ((= i 3)
-                        (let ([column (parseInput tempPos)]) (set! D (make-block 'D column (checkRow column) 'square 'orange)))
-                        (drawCube D))
-                       
-                       ((= i 4)
-                        (let ([column (parseInput tempPos)]) (set! E (make-block 'E column (checkRow column) 'circle 'yellow)))
-                        (drawCube E))
-                       ))))
+                  floor
+                  blockInit)))
 
 (init)
