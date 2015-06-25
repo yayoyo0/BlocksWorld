@@ -173,9 +173,11 @@ Programming languages
                (cond ((equal? (block-shape to) 'circle) (display "Unable to perform the movement"))
                      (else (cond ((and (null? (onTop to)) (null? (onTop from)))
                                   (moveBlock from (block-x to) (checkRow (block-x to))))
-                                 ((and 
-                                   (not (null? (onTop from))) (moveHelper (onTopList (onTop from)))
-                                   (not (null? (onTop to))) (moveHelper (onTopList (onTop to)))) 
+                                 ((not (null? (onTop from))) (moveHelper (onTopList (onTop from))) (putOn from to))
+                                 ((not (null? (onTop to))) (moveHelper (onTopList (onTop to))) (putOn from to))
+                                 (((and 
+                                   (not (null? (onTop from)))
+                                   (not (null? (onTop to)))))
                                   (moveBlock from (block-x to) (checkRow (block-x to))))
                                  (else (putOn from to)))))))
 
@@ -208,6 +210,6 @@ Programming languages
                (begin
                   robot-arm
                   floor
-                  blockInit)))
+                  (blockInit))))
 
 (init)
