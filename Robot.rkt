@@ -52,34 +52,50 @@ Programming languages
 (define D (list ))
 (define E (list ))
 
-(define colors '(red blue orange yellow green))
 (define tempPos C1)
 
 ;Start the window
-(start WIDTH HEIGHT)
+(begin (cond ((start WIDTH HEIGHT))))
+
 
 ;Draw robot arm in GUI
 (define robot-arm
   (begin
     (draw-solid-rect origin 5 30 'black)
-    (draw-solid-rect centerArm 30 5 'black)
-    )
-  )
+    (draw-solid-rect centerArm 30 5 'black)))
+
 ;Draw floor on GUI
 (define floor
-  (draw-solid-rect floorPosition WIDTH 10 'black)
-  )
+  (draw-solid-rect floorPosition WIDTH 10 'black))
 
 ;Draw cube in GUI
 (define drawCube (lambda (item)
-                   (define temp (make-posn (block-x item) (block-y item)))
-                   (cond ((equal? (block-shape item) 'square) (draw-solid-rect temp BLOCK-SIZE BLOCK-SIZE (block-color item)))
-                         ((equal? (block-shape item) 'circle) (draw-solid-disk temp RADIUS (block-color item))))))
+                   (cond ((equal? (block-shape item) 'square) (define temp (make-posn (block-x item) (block-y item)))
+                                                              (draw-solid-rect temp BLOCK-SIZE BLOCK-SIZE (block-color item))
+                                                              (define temp2 (make-posn (+ (block-x item) 10) (+ (block-y item) 20)))
+                                                              (draw-solid-string temp2 (parseItem (block-name item))))
+                         
+                         ((equal? (block-shape item) 'circle) (define temp (make-posn (+ (block-x item) 15) (+ (block-y item) 15)))
+                                                              (draw-solid-disk temp RADIUS (block-color item))
+                                                              (define temp2 (make-posn (+ (block-x item) 10) (+ (block-y item) 20)))
+                                                              (draw-solid-string temp2 (parseItem (block-name item)))))))
 ;Erase cube from GUI
 (define clearCube (lambda (item)
-                   (define temp (make-posn (block-x item) (block-y item)))
-                   (cond ((equal? (block-shape item) 'square) (clear-solid-rect temp BLOCK-SIZE BLOCK-SIZE (block-color item)))
-                         ((equal? (block-shape item) 'circle) (clear-solid-disk temp RADIUS (block-color item))))))
+                   (cond ((equal? (block-shape item) 'square) (define temp (make-posn (block-x item) (block-y item)))
+                                                              (clear-solid-rect temp BLOCK-SIZE BLOCK-SIZE (block-color item))
+                                                              (define temp2 (make-posn (+ (block-x item) 10) (+ (block-y item) 20)))
+                                                              (clear-solid-string temp2 (parseItem (block-name item))))
+                         ((equal? (block-shape item) 'circle) (define temp (make-posn (+ (block-x item) 15) (+ (block-y item) 15)))
+                                                              (clear-solid-disk temp RADIUS (block-color item))
+                                                              (define temp2 (make-posn (+ (block-x item) 10) (+ (block-y item) 20)))
+                                                              (clear-solid-string temp2 (parseItem (block-name item)))))))
+
+(define parseItem (lambda (item)
+                    (cond ((equal? item 'A) "A")
+                          ((equal? item 'B) "B")
+                          ((equal? item 'C) "C")
+                          ((equal? item 'D) "D")
+                          ((equal? item 'E) "E"))))
 
 ;Parse user input to defined columns
 (define parseInput (lambda (input)
@@ -98,13 +114,32 @@ Programming languages
                          ((equal? C4 column) (define temp (- HEIGHT (+ (* C4L BLOCK-SIZE) BLOCK-SIZE 10))) (set! C4L (+ C4L 1)) temp)
                          ((equal? C5 column) (define temp (- HEIGHT (+ (* C5L BLOCK-SIZE) BLOCK-SIZE 10))) (set! C5L (+ C5L 1)) temp))))
 
-;Return the item on the blockList 
-(define checkItem (lambda (item)
-                    (cond ((equal? item 'A) A)
-                          ((equal? item 'B) B)
-                          ((equal? item 'C) C)
-                          ((equal? item 'D) D)
-                          ((equal? item 'E) E))))
+;Finds an empty column
+(define findSpace (lambda () 
+                    (cond 
+                      ((equal? C1L 0) C1)
+                      ((equal? C2L 0) C2)
+                      ((equal? C3L 0) C3)
+                      ((equal? C4L 0) C4)
+                      ((equal? C5L 0) C5))))
+
+;Finds if there is something above the blocks trying to be moved
+(define onTop(lambda (block)
+               (define column (block-x block))
+               (define row (block-y block))
+               (define rowAbove (- row BLOCK-SIZE))
+               (cond ((and (equal? column (block-x A)) (equal? rowAbove (block-y A))) A)
+                     ((and (equal? column (block-x B)) (equal? rowAbove (block-y B))) B)
+                     ((and (equal? column (block-x C)) (equal? rowAbove (block-y C))) C)
+                     ((and (equal? column (block-x D)) (equal? rowAbove (block-y D))) D)
+                     ((and (equal? column (block-x E)) (equal? rowAbove (block-y E))) E)
+                     (else '()))))
+
+(define onTopList (lambda (block)
+                    (define temp '())
+                    (cond ((null? block) temp)
+                          (else (reverse (cons block (onTopList (onTop block))))))))
+
 ;Move block in GUI
 (define moveBlock (lambda (block column row)
                     (clearCube block)
@@ -122,12 +157,29 @@ Programming languages
                           ((equal? block E) (set! E temp)))
                     (drawCube temp)))
 
+(define moveHelper (lambda (list)
+                     (cond ((null? list) true) 
+                     (else (let ([column (findSpace)]) (moveBlock (car list) column (checkRow column))) 
+                           (sleep-for-a-while 2)
+                           (moveHelper (cdr list))))))
+
 ;Move block to another position with the input of the user
 (define putOn(lambda (from to)
-               (moveBlock from (block-x to) (checkRow (block-x to)))))
-
+               (cond ((equal? (block-shape to) 'circle) (display "Unable to perform the movement"))
+                     (else (cond ((and (null? (onTop to)) (null? (onTop from)))
+                                  (moveBlock from (block-x to) (checkRow (block-x to))))
+                                 ((and 
+                                   (not (null? (onTop from))) (moveHelper (onTopList (onTop from)))
+                                   (not (null? (onTop to))) (moveHelper (onTopList (onTop to)))) 
+                                  (moveBlock from (block-x to) (checkRow (block-x to))))
+                                 (else (putOn from to)))))))
+               
 ;Initialization function
 (define init (lambda ()
+               (begin
+                  robot-arm
+                  floor)
+               
                (for ([i 5])
                  (display "In which column do you want to place the figure? (C1-C5)")
                (set! tempPos (read))
@@ -148,11 +200,8 @@ Programming languages
                         (drawCube D))
                        
                        ((= i 4)
-                        (let ([column (parseInput tempPos)]) (set! E (make-block 'E column (checkRow column) 'square 'yellow)))
+                        (let ([column (parseInput tempPos)]) (set! E (make-block 'E column (checkRow column) 'circle 'yellow)))
                         (drawCube E))
-                       ))
-               (begin
-                  robot-arm
-                  floor)))
+                       ))))
 
 (init)
