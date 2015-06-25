@@ -1,9 +1,9 @@
 # BlocksWorld
 BlocksWorld using Scheme
-
-## All credits of the implementation to Luis Eduardo Rodríguez Ramírez
-
 Implemented on DrRacket
+
+All credits of the implementation to Luis Eduardo Rodríguez Ramírez
+
 
 **Usage**
 - Run the command "putOn(Block Block)".
