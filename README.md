@@ -6,7 +6,7 @@ BlocksWorld using Scheme
 Implemented on DrRacket
 
 **Usage**
-Run the command "putOn(Block Block)".
+- Run the command "putOn(Block Block)".
 
 **Inventory of functions**
 - (start WIDTH HEIGHT) => Start the canvas in a new window
