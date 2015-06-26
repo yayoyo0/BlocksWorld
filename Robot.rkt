@@ -168,12 +168,20 @@ Programming languages
                            (sleep-for-a-while 2)
                            (moveHelper (cdr list))))))
 
+;Block helper
+(define blockHelper (lambda (block) 
+                      (cond ((equal? (block-name block) 'A) A)
+                            ((equal? (block-name block) 'B) B)
+                            ((equal? (block-name block) 'C) C)
+                            ((equal? (block-name block) 'D) D)
+                            ((equal? (block-name block) 'E) E))))
+
 ;Move block to another position with the input of the user
 (define putOn(lambda (from to)
                (cond ((equal? (block-shape to) 'circle) (display "Unable to perform the movement"))
                      (else (cond ((and (null? (onTop to)) (null? (onTop from)))
                                   (moveBlock from (block-x to) (checkRow (block-x to))))
-                                 ((not (null? (onTop from))) (moveHelper (onTopList (onTop from))) (putOn from to))
+                                 ((not (null? (onTop from))) (moveHelper (onTopList (onTop from))) (putOn (blockHelper from) (blockHelper to)))
                                  ((not (null? (onTop to))) (moveHelper (onTopList (onTop to))) (putOn from to))
                                  (((and 
                                    (not (null? (onTop from)))
